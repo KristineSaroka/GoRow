@@ -88,10 +88,6 @@ public class PlayerController : MonoBehaviour
         Destroy(GetComponent<Animation>());
     }
 
-    private void DestroyProgressTracker()
-    {
-    }
-
     private void UpdateAppearance()
     {
         Renderer[] renderers = GetComponentsInChildren<Renderer>();
@@ -105,6 +101,9 @@ public class PlayerController : MonoBehaviour
                 // Change minimap icon color
                 if (renderer.gameObject.name == "Boat Front" || renderer.gameObject.name == "Boat Rear")
                 {
+                    // Render other player icon below ours
+                    renderer.gameObject.transform.parent.Translate(new Vector3(0, -0.5f, 0));
+
                     materials[i].color = Color.red;
                 }
 
@@ -189,7 +188,7 @@ public class PlayerController : MonoBehaviour
 
 
 
-#if UNITY_EDITOR
+//#if UNITY_EDITOR
 
         // Increase time
         currTime += Time.fixedDeltaTime;
@@ -212,15 +211,15 @@ public class PlayerController : MonoBehaviour
             strokeState = 0;
         }
 
-#else
+//#else
 
-        // get speed from erg
-        speed = stats.getspeed();
+//        // get speed from erg
+//        speed = stats.GetSpeed();
 
-        // get stroke state from erg
-        strokestate = stats.getstrokestate();
+//        // get stroke state from erg
+//        strokeState = stats.GetStrokeState();
 
-#endif
+//#endif
 
         // If driving
         if (strokeState == (int) StrokeStates.Driving)

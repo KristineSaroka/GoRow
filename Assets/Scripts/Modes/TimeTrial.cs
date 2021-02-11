@@ -14,7 +14,7 @@ public class TimeTrial : MonoBehaviour
     [HideInInspector] public bool timeTrialInProgress = false;
     [HideInInspector] public bool timeTrialComplete = false;
 
-    [HideInInspector] public float timeTheTimeTrialInitiated;
+    [HideInInspector] public float timeTimeTrialInitiated;
     [HideInInspector] public float timeTheTimeTrialStarted;
     [HideInInspector] public float pauseBeforeTimeTrialBegins = 5f;
 
@@ -55,7 +55,7 @@ public class TimeTrial : MonoBehaviour
                 }
                 else if (timeTrialInProgress == false)
                 {
-                    if ((timeTheTimeTrialInitiated + timeSecs) > pauseBeforeTimeTrialBegins)
+                    if ((timeTimeTrialInitiated + timeSecs) > pauseBeforeTimeTrialBegins)
                     {
                         StartCountdown();
                     }
@@ -98,25 +98,25 @@ public class TimeTrial : MonoBehaviour
         }
     }
 
-    private void UpdateStopWatch()
+    public void InitiateTimeTrial(int numberOfLaps)
     {
-        timeTrialDuration = TimeSpan.FromSeconds((timeSecs + durationOfTimeTrialWithoutPauses) - timeTheTimeTrialStarted);
+        timeTrialInitiated = true;
+        timeTimeTrialInitiated = Time.timeSinceLevelLoad;
 
-        DisplayTimeTrialDataToParticipants($"{timeTrialDuration.ToString(@"mm\:ss")}");
+        this.numberOfLaps = numberOfLaps;
     }
 
     public void AddParticipantIntoTimeTrial(PlayerController player)
     {
         this.player = player;
-        player.GetComponent<WaypointProgressTracker>().amountOfLaps = numberOfLaps;
-    }
 
-    private void StartTimeTrial()
-    {
-        player.Unpause();
+        player.participatingInTimeTrial = true;
+        
+        WaypointProgressTracker wpt = player.GetComponent<WaypointProgressTracker>();
 
-        timeTrialInProgress = true;
-        timeTheTimeTrialStarted = Time.timeSinceLevelLoad;
+        wpt.Reset();
+        wpt.UpdateLaps(numberOfLaps);
+        wpt.UpdatePosition();
     }
 
     // Pause singleplayer time trial if pause menu is opened
@@ -135,6 +135,21 @@ public class TimeTrial : MonoBehaviour
         timeTheTimeTrialStarted = Time.timeSinceLevelLoad;
 
         player.Unpause();
+    }
+
+    private void UpdateStopWatch()
+    {
+        timeTrialDuration = TimeSpan.FromSeconds((timeSecs + durationOfTimeTrialWithoutPauses) - timeTheTimeTrialStarted);
+
+        DisplayTimeTrialDataToParticipants($"{timeTrialDuration.ToString(@"mm\:ss")}");
+    }
+
+    private void StartTimeTrial()
+    {
+        player.Unpause();
+
+        timeTrialInProgress = true;
+        timeTheTimeTrialStarted = Time.timeSinceLevelLoad;
     }
 
     private void DisplayTimeTrialDataToParticipants(string time)
@@ -173,7 +188,7 @@ public class TimeTrial : MonoBehaviour
         numberOfLaps = 0;
         countdown = 3f;
         currentTimeInCountdown = 0;
-        timeTheTimeTrialInitiated = 0;
+        timeTimeTrialInitiated = 0;
         durationOfTimeTrialWithoutPauses = 0;
     }
 }

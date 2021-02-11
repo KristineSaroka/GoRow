@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Photon.Pun;
+using UnityEngine;
 using UnityStandardAssets.Utility;
 
 public class RaceManager : MonoBehaviour
@@ -15,7 +16,7 @@ public class RaceManager : MonoBehaviour
         // Changing this just to get it working for the release
         // Will change back to previous implementation later
         Race heroBeachRace = FindObjectOfType<Race>();
-        if(heroBeachRace.raceInitiated == false)
+        if (heroBeachRace.raceInitiated == false)
         {
             //BringUpRaceSetupMenu
             //SetAllRaceParametersBased on the feedback given by player
@@ -26,7 +27,7 @@ public class RaceManager : MonoBehaviour
         }
         else
         {
-            if(heroBeachRace.players.Count < heroBeachRace.raceCapacity)
+            if (heroBeachRace.players.Count < heroBeachRace.raceCapacity)
             {
                 //Add player to the partcipants list
             }
@@ -39,21 +40,19 @@ public class RaceManager : MonoBehaviour
     //IMPORTANT: Everything being set in this method will need to be set for every player joining game, it is essential 
     public void AddPlayerToRace(PlayerController player)
     {
-        player.participatingInRace = true;
+        // Retrieve race
+        Race race = FindObjectOfType<Race>();
 
-        // Changing this just to get it working for the release
-        // Will change back to previous implementation later
-        Race heroBeachRace = FindObjectOfType<Race>();
+        // Retrieve waypoint progress tracker
+        WaypointProgressTracker wpt = player.GetComponent<WaypointProgressTracker>();
 
-        // Changing this just to get it working for the release
-        // Will change back to previous implementation later
-        player.GetComponent<WaypointProgressTracker>().Circuit = heroBeachRace.gameObject.GetComponent<WaypointCircuit>();
-        player.GetComponent<WaypointProgressTracker>().currentRace = heroBeachRace;
-        player.GetComponent<WaypointProgressTracker>().lastIndex = heroBeachRace.route.Length-1;
-        heroBeachRace.raceInitiated = true;
-        heroBeachRace.timeRaceInitiated = Time.timeSinceLevelLoad;
-        heroBeachRace.numberOfLaps = 1;
-        heroBeachRace.raceCapacity = 2;
-        heroBeachRace.AddParticipantIntoRace(player);
+        // Setup wpt values
+        wpt.SetCircuit(race.gameObject.GetComponent<WaypointCircuit>());
+        wpt.UpdateLastNodeIndex(race.route.Length - 1);
+        wpt.SetRace(race);
+
+        // Setup race values
+        race.InitiateRace(1, 2);
+        race.AddParticipantIntoRace(player);
     }
 }

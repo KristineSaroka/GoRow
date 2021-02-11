@@ -41,6 +41,10 @@ MonoBehaviour:
   - ChangeColour
   - GitParent
   - PlaceAchievement
+  - RPC_AddPlayerToRace
+  - RPC_AddParticipantIntoRace
+  - RPC_AddParticipantToCompletedRaceList
+  - RPC_AddParticipantsToCompletedRaceList
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

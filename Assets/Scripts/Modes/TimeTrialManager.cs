@@ -32,20 +32,19 @@ public class TimeTrialManager : MonoBehaviour
     // waypoint/ race/ time trial mechanics until the menu and more race routes are implemented 
     public void AddPlayerToTimeTrial(PlayerController player)
     {
-        player.participatingInTimeTrial = true;
+        // Retrieve race
+        TimeTrial timeTrial = FindObjectOfType<TimeTrial>();
 
-        // Changing this just to get it working for the release
-        // Will change back to previous implementation later
-        TimeTrial heroBeachTimeTrial = FindObjectOfType<TimeTrial>();
+        // Retrieve waypoint progress tracker
+        WaypointProgressTracker wpt = player.GetComponent<WaypointProgressTracker>();
 
-        // Changing this just to get it working for the release
-        // Will change back to previous implementation later
-        player.GetComponent<WaypointProgressTracker>().Circuit = heroBeachTimeTrial.gameObject.GetComponent<WaypointCircuit>();
-        player.GetComponent<WaypointProgressTracker>().currentTimeTrial = heroBeachTimeTrial;
-        player.GetComponent<WaypointProgressTracker>().lastIndex = heroBeachTimeTrial.route.Length - 1;
-        heroBeachTimeTrial.timeTrialInitiated = true;
-        heroBeachTimeTrial.timeTheTimeTrialInitiated = Time.timeSinceLevelLoad;
-        heroBeachTimeTrial.numberOfLaps = 3;
-        heroBeachTimeTrial.AddParticipantIntoTimeTrial(player);
+        // Setup wpt values
+        wpt.SetCircuit(timeTrial.gameObject.GetComponent<WaypointCircuit>());
+        wpt.UpdateLastNodeIndex(timeTrial.route.Length - 1);
+        wpt.SetTimeTrial(timeTrial);
+
+        // Setup time trial values
+        timeTrial.InitiateTimeTrial(1);
+        timeTrial.AddParticipantIntoTimeTrial(player);
     }
 }

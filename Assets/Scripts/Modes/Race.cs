@@ -51,7 +51,7 @@ public class Race : MonoBehaviour
     {
         if (!gamePaused)
         {
-            timeSecs = Time.timeSinceLevelLoad;
+            timeSecs += Time.deltaTime;
 
             if (raceInitiated)
             {
@@ -61,9 +61,18 @@ public class Race : MonoBehaviour
                 }
                 else if (!raceInProgress)
                 {
-                    if (players.Count == raceCapacity || (timeRaceInitiated + timeSecs) > waitTimeForOtherPlayersToJoin)
+                    // If singleplayer
+                    if (PhotonNetwork.OfflineMode)
+                    {
+                        // Start race immediately
+                        StartCountdown();
+                    }
+
+                    // Otherwise, wait for other players to join
+                    else if (players.Count == raceCapacity || (timeSecs) > waitTimeForOtherPlayersToJoin)
                     {
                         StartCountdown();
+                        timeSecs = 0;
                     }
                 }
                 else
@@ -107,6 +116,15 @@ public class Race : MonoBehaviour
         }
     }
 
+    public void InitiateRace(int numberOfLaps, int raceCapacity)
+    {
+        raceInitiated = true;
+        timeRaceInitiated = Time.timeSinceLevelLoad;
+
+        this.numberOfLaps = numberOfLaps;
+        this.raceCapacity = raceCapacity;
+    }
+
     private void UpdateStopWatch()
     {
         foreach (PlayerController participant in players)
@@ -121,18 +139,52 @@ public class Race : MonoBehaviour
     {
         if (players.Count < raceCapacity)
         {
-            players.Add(player);
+            // Add player to shared array
+            photonView.RPC("RPC_AddParticipantIntoRace", RpcTarget.AllBuffered, player.GetComponent<PhotonView>().ViewID);
 
-            player.GetComponent<WaypointProgressTracker>().amountOfLaps = numberOfLaps;
+            player.participatingInRace = true;
+
+            WaypointProgressTracker wpt = player.GetComponent<WaypointProgressTracker>();
+
+            wpt.Reset();
+            wpt.UpdateLaps(numberOfLaps);
+            wpt.UpdatePosition();
         }
+    }
+
+    [PunRPC]
+    public void RPC_AddParticipantIntoRace(int playerViewID)
+    {
+        PhotonView playerView = PhotonView.Find(playerViewID);
+
+        PlayerController player = playerView.GetComponent<PlayerController>();
+
+        players.Add(player);
     }
 
     public void AddParticipantToCompletedRaceList(PlayerController player)
     {
-        participantsCompletedRace.Add(racePositionIndex, player);
+        // Add player to shared array
+        photonView.RPC("RPC_AddParticipantsToCompletedRaceList", RpcTarget.AllBuffered, player.GetComponent<PhotonView>().ViewID);
+
+        // Flag as finished race
+        player.participatingInRace = false;
+
+        // Update position
         racePositionIndex++;
 
+        // Check if race complete
         CheckIfRaceComplete();
+    }
+
+    [PunRPC]
+    public void RPC_AddParticipantsToCompletedRaceList(int playerViewID)
+    {
+        PhotonView playerView = PhotonView.Find(playerViewID);
+
+        PlayerController player = playerView.GetComponent<PlayerController>();
+
+        participantsCompletedRace.Add(racePositionIndex, player);
     }
 
     private void StartRace()
